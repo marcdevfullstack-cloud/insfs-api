@@ -85,7 +85,7 @@
         .bottom { width: 100%; border-collapse: collapse; margin-top: 14px; }
         .bottom td { vertical-align: bottom; }
         .qr-cell { width: 105px; text-align: center; }
-        .qr-cell svg { width: 88px; height: 88px; }
+        .qr-cell img { width: 88px; height: 88px; display: block; margin: 0 auto; }
         .qr-label { font-size: 6.5pt; color: #777; margin-top: 3px; }
         .sig-box   { width: 180px; height: 62px; border: 1px solid #ccc; margin-bottom: 5px; }
         .sig-label { font-size: 9pt; font-weight: bold; color: #007A33; }
@@ -295,7 +295,7 @@
     <table class="bottom">
         <tr>
             <td class="qr-cell">
-                {!! $qrCode !!}
+                <img src="{{ $qrCode }}" alt="QR Code" width="88" height="88">
                 <div class="qr-label">Code de vérification INSFS</div>
             </td>
             <td style="text-align:right;">

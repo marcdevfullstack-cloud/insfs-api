@@ -27,6 +27,12 @@ class StudentController extends Controller
             });
         }
 
+        if ($request->filled('school_code')) {
+            $query->whereHas('enrollments.school', function ($q) use ($request) {
+                $q->where('code', $request->school_code);
+            });
+        }
+
         if ($request->filled('academic_year_id')) {
             $query->whereHas('enrollments', function ($q) use ($request) {
                 $q->where('academic_year_id', $request->academic_year_id);

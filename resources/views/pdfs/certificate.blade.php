@@ -85,7 +85,7 @@
         .bottom { width: 100%; border-collapse: collapse; margin-top: 18px; }
         .bottom td { vertical-align: bottom; }
         .qr-cell { width: 115px; text-align: center; }
-        .qr-cell svg { width: 100px; height: 100px; }
+        .qr-cell img { width: 100px; height: 100px; display: block; margin: 0 auto; }
         .qr-label { font-size: 7pt; color: #777; margin-top: 4px; }
         .sig-box   { width: 185px; height: 70px; border: 1px solid #ccc; margin-bottom: 5px; }
         .sig-label { font-size: 9pt; font-weight: bold; color: #007A33; }
@@ -222,7 +222,7 @@
     <table class="bottom">
         <tr>
             <td class="qr-cell">
-                {!! $qrCode !!}
+                <img src="{{ $qrCode }}" alt="QR Code" width="100" height="100">
                 <div class="qr-label">Vérification authentique<br>Scanner pour vérifier</div>
             </td>
             <td style="text-align:right;">
