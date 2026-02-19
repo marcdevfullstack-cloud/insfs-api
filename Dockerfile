@@ -1,16 +1,17 @@
-FROM php:8.3-cli
+FROM php:8.3-cli-alpine
 
-# ── Extensions système nécessaires à Laravel + dompdf + qrcode ──
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# ── Dépendances Alpine + extensions PHP ──
+RUN apk add --no-cache \
     git \
     curl \
     unzip \
     libpng-dev \
-    libonig-dev \
-    libxml2-dev \
+    freetype-dev \
+    libjpeg-turbo-dev \
     libzip-dev \
-    libfreetype6-dev \
-    libjpeg62-turbo-dev \
+    libxml2-dev \
+    icu-dev \
+    oniguruma-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
         pdo \
@@ -22,33 +23,29 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         exif \
         intl \
         dom \
-        xml \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+        xml
 
 # ── Composer ──
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-# ── Dépendances PHP (sans dev) ──
+# ── Dépendances PHP ──
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
 
 # ── Code source ──
 COPY . .
 
-# ── Permissions storage ──
-RUN mkdir -p storage/logs storage/framework/{cache,sessions,views} bootstrap/cache \
-    && chown -R www-data:www-data storage bootstrap/cache \
+# ── Permissions ──
+RUN mkdir -p storage/logs storage/framework/cache storage/framework/sessions \
+        storage/framework/views bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-# ── Port exposé (Railway injecte $PORT) ──
 EXPOSE 8000
 
-# ── Démarrage : migrations + storage:link + serveur ──
 CMD php artisan config:cache && \
     php artisan route:cache && \
-    php artisan storage:link --quiet 2>/dev/null || true && \
+    php artisan storage:link 2>/dev/null; \
     php artisan migrate --force && \
     php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
