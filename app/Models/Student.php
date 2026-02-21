@@ -39,6 +39,8 @@ class Student extends Model
         'diploma_bac',
         'diploma_bac_serie',
         'other_diplomas',
+        'is_blocked',
+        'block_reason',
     ];
 
     protected function casts(): array
@@ -49,6 +51,7 @@ class Student extends Model
             'diploma_bepc' => 'boolean',
             'diploma_bac' => 'boolean',
             'children_count' => 'integer',
+            'is_blocked' => 'boolean',
         ];
     }
 

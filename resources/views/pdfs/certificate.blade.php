@@ -11,7 +11,18 @@
             color: #1a1a1a;
             background: white;
         }
-        .page { padding: 10mm 18mm 12mm; }
+        .page { padding: 8mm 14mm 10mm; }
+
+        /* ── Cadre double officiel ────────────────── */
+        .outer-frame {
+            border: 3px solid #009A44;
+            padding: 4px;
+            min-height: 260mm;
+        }
+        .inner-frame {
+            border: 1px solid #009A44;
+            padding: 8mm 12mm 10mm;
+        }
 
         /* ── Bandeau drapeau ivoirien ─────────────── */
         .flag-band { width: 100%; height: 6px; margin-bottom: 10px; }
@@ -99,6 +110,8 @@
 </head>
 <body>
 <div class="page">
+<div class="outer-frame">
+<div class="inner-frame">
 
     {{-- Bandeau drapeau haut --}}
     <div class="flag-band">
@@ -246,6 +259,8 @@
         </tr></table>
     </div>
 
-</div>
+</div>{{-- /inner-frame --}}
+</div>{{-- /outer-frame --}}
+</div>{{-- /page --}}
 </body>
 </html>

@@ -130,6 +130,35 @@ class StudentController extends Controller
         return response()->json(null, 204);
     }
 
+    public function block(Request $request, Student $student): JsonResponse
+    {
+        if ($request->user()->role !== 'ADMIN') {
+            return response()->json(['message' => 'Accès non autorisé.'], 403);
+        }
+
+        $validated = $request->validate([
+            'block_reason' => 'nullable|string|max:500',
+        ]);
+
+        $student->update([
+            'is_blocked'   => true,
+            'block_reason' => $validated['block_reason'] ?? null,
+        ]);
+
+        return response()->json($student->fresh());
+    }
+
+    public function unblock(Request $request, Student $student): JsonResponse
+    {
+        if ($request->user()->role !== 'ADMIN') {
+            return response()->json(['message' => 'Accès non autorisé.'], 403);
+        }
+
+        $student->update(['is_blocked' => false, 'block_reason' => null]);
+
+        return response()->json($student->fresh());
+    }
+
     public function uploadPhoto(Request $request, Student $student): JsonResponse
     {
         $request->validate([

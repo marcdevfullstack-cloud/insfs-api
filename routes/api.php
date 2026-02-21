@@ -20,10 +20,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/me', [AuthController::class, 'me']);
 
-    // Référentiel (lecture seule pour tous les rôles)
+    // Référentiel
     Route::get('/schools', [SchoolController::class, 'index']);
     Route::get('/academic-years', [SchoolController::class, 'academicYears']);
     Route::get('/academic-years/current', [SchoolController::class, 'currentAcademicYear']);
+    Route::post('/academic-years', [SchoolController::class, 'storeAcademicYear']);                                  // ADMIN
+    Route::patch('/academic-years/{academicYear}/set-current', [SchoolController::class, 'setCurrentAcademicYear']); // ADMIN
 
     // Étudiants (ADMIN + SCOLARITE)
     Route::get('/students', [StudentController::class, 'index']);
@@ -32,6 +34,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/students/{student}', [StudentController::class, 'update']);
     Route::delete('/students/{student}', [StudentController::class, 'destroy']);
     Route::post('/students/{student}/photo', [StudentController::class, 'uploadPhoto']);
+    Route::patch('/students/{student}/block', [StudentController::class, 'block']);     // ADMIN
+    Route::patch('/students/{student}/unblock', [StudentController::class, 'unblock']); // ADMIN
 
     // Inscriptions (ADMIN + SCOLARITE)
     Route::get('/enrollments', [EnrollmentController::class, 'index']);
