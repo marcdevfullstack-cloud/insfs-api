@@ -52,6 +52,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Documents PDF
     Route::get('/documents/certificate/{enrollment}', [DocumentController::class, 'certificate']);
     Route::get('/documents/student-record/{student}', [DocumentController::class, 'studentRecord']);
+    Route::get('/documents/receipt/{payment}', [DocumentController::class, 'receipt']);
 
     // Tableau de bord
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);

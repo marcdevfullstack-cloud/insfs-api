@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Document;
 use App\Models\Enrollment;
+use App\Models\Payment;
 use App\Models\Student;
 use App\Services\PdfService;
 use Illuminate\Http\Request;
@@ -71,6 +72,21 @@ class DocumentController extends Controller
         ]);
 
         $filename = sprintf('fiche_%s.pdf', $student->matricule);
+
+        return response($pdf->output(), 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    public function receipt(Request $request, Payment $payment): Response
+    {
+        $payment->load(['enrollment.student', 'enrollment.school', 'enrollment.academicYear', 'recorder']);
+
+        $pdf = $this->pdfService->generateReceipt($payment);
+
+        $student  = $payment->enrollment->student;
+        $filename = sprintf('recu_%s_%s.pdf', $payment->receipt_number, $student->matricule);
 
         return response($pdf->output(), 200, [
             'Content-Type'        => 'application/pdf',

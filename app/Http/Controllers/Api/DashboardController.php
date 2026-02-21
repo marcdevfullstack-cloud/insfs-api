@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Enrollment;
 use App\Models\Payment;
+use App\Models\School;
 use App\Models\Student;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -26,6 +27,33 @@ class DashboardController extends Controller
         $enrollmentsValide   = (int) ($enrollmentCounts->get('VALIDE') ?? 0);
         $enrollmentsAnnule   = (int) ($enrollmentCounts->get('ANNULE') ?? 0);
 
+        // Distribution des inscriptions par école
+        $schools = School::all()->keyBy('id');
+        $bySchoolRaw = Enrollment::selectRaw('school_id, count(*) as count')
+            ->groupBy('school_id')
+            ->get();
+        $bySchool = $bySchoolRaw->map(fn($e) => [
+            'school_code' => $schools->get($e->school_id)?->code ?? '?',
+            'count'        => (int) $e->count,
+        ])->values();
+
+        // Top 5 inscriptions EN_COURS les plus récentes (impayés potentiels)
+        $topUnpaid = Enrollment::with(['student', 'school', 'academic_year'])
+            ->where('status', 'EN_COURS')
+            ->latest()
+            ->limit(5)
+            ->get()
+            ->map(fn($e) => [
+                'id'            => $e->id,
+                'student'       => $e->student ? [
+                    'last_name'  => $e->student->last_name,
+                    'first_name' => $e->student->first_name,
+                    'matricule'  => $e->student->matricule,
+                ] : null,
+                'school_code'   => $e->school?->code,
+                'academic_year' => $e->academic_year?->label,
+            ]);
+
         // Paiements
         $totalCollected = (float) Payment::sum('amount');
 
@@ -44,16 +72,18 @@ class DashboardController extends Controller
                 'total' => $totalStudents,
             ],
             'enrollments' => [
-                'total'    => $totalEnrollments,
-                'en_cours' => $enrollmentsEnCours,
-                'valide'   => $enrollmentsValide,
-                'annule'   => $enrollmentsAnnule,
+                'total'     => $totalEnrollments,
+                'en_cours'  => $enrollmentsEnCours,
+                'valide'    => $enrollmentsValide,
+                'annule'    => $enrollmentsAnnule,
+                'by_school' => $bySchool,
             ],
             'payments' => [
                 'total_collected'      => $totalCollected,
                 'collected_this_month' => $collectedThisMonth,
                 'recovery_rate'        => $recoveryRate,
             ],
+            'top_unpaid' => $topUnpaid,
         ]);
     }
 }

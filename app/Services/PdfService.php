@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Enrollment;
+use App\Models\Payment;
 use App\Models\Student;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -66,6 +67,36 @@ class PdfService
         ]);
 
         $pdf->setPaper('A4', 'portrait');
+
+        return $pdf;
+    }
+
+    public function generateReceipt(Payment $payment): \Barryvdh\DomPDF\PDF
+    {
+        $payment->loadMissing(['enrollment.student', 'enrollment.school', 'enrollment.academicYear', 'recorder']);
+        $enrollment = $payment->enrollment;
+        $student    = $enrollment->student;
+
+        $qrCode = $this->qrCodeService->generate([
+            'type'           => 'RECU_PAIEMENT',
+            'receipt_number' => $payment->receipt_number,
+            'amount'         => (float) $payment->amount,
+            'matricule'      => $student->matricule,
+            'date'           => $payment->payment_date->format('d/m/Y'),
+        ]);
+
+        $pdf = Pdf::loadView('pdfs.receipt', [
+            'payment'      => $payment,
+            'enrollment'   => $enrollment,
+            'student'      => $student,
+            'school'       => $enrollment->school,
+            'academicYear' => $enrollment->academicYear,
+            'recorder'     => $payment->recorder,
+            'qrCode'       => $qrCode,
+            'generatedAt'  => now(),
+        ]);
+
+        $pdf->setPaper([0, 0, 420, 595], 'portrait'); // A5
 
         return $pdf;
     }

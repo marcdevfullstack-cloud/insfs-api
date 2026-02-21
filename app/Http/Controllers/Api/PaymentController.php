@@ -33,6 +33,7 @@ class PaymentController extends Controller
         $validated = $request->validate([
             'enrollment_id'      => 'required|uuid|exists:enrollments,id',
             'payment_type'       => 'required|in:FRAIS_INSCRIPTION,FRAIS_SCOLARITE',
+            'payment_method'     => 'required|in:ESPÈCES,VIREMENT,MOBILE_MONEY',
             'amount'             => 'required|numeric|min:1',
             'payment_date'       => 'required|date',
             'receipt_number'     => 'required|string|max:50',
@@ -42,8 +43,7 @@ class PaymentController extends Controller
 
         $payment = Payment::create([
             ...$validated,
-            'payment_method' => 'ESPÈCES',
-            'recorded_by'    => $user->id,
+            'recorded_by' => $user->id,
         ]);
 
         // Auto-validation : si total payé >= total dû, marquer l'inscription VALIDE
