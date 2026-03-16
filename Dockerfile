@@ -44,8 +44,10 @@ RUN mkdir -p storage/logs storage/framework/cache storage/framework/sessions \
 
 EXPOSE 8000
 
-CMD php artisan config:cache && \
+CMD php artisan config:clear && \
+    php artisan config:cache && \
     php artisan route:cache && \
     php artisan storage:link 2>/dev/null; \
     php artisan migrate --force && \
+    php artisan db:seed --class=PortalTestSeeder --force && \
     php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
