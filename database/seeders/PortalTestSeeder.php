@@ -17,12 +17,18 @@ class PortalTestSeeder extends Seeder
         // ── Nettoyage des anciens enregistrements test ──────────────────────
         $this->command->info('🧹 Nettoyage des anciens comptes test...');
 
-        $oldUser = PortalUser::where('email', 'etudiant@insfs.ci')->first();
-        if ($oldUser) {
-            EnrollmentApplication::where('portal_user_id', $oldUser->id)->forceDelete();
-            $oldUser->tokens()->delete();
-            $oldUser->forceDelete();
-            $this->command->info('  ✓ Ancien PortalUser supprimé');
+        $oldUsers = PortalUser::whereIn('email', [
+            'etudiant@insfs.ci',
+            'marcdevfullstack@gmail.com',
+        ])->get();
+
+        foreach ($oldUsers as $u) {
+            EnrollmentApplication::where('portal_user_id', $u->id)->forceDelete();
+            $u->tokens()->delete();
+            $u->forceDelete();
+        }
+        if ($oldUsers->count() > 0) {
+            $this->command->info('  ✓ Anciens PortalUsers supprimés ('.$oldUsers->count().')');
         }
 
         // Supprimer les anciens admis test du batch TEST-2025
@@ -41,7 +47,7 @@ class PortalTestSeeder extends Seeder
         $admin  = User::where('role', 'ADMIN')->firstOrFail();
 
         // ── Admis test 1 — KOUAME Jean-Baptiste (non encore inscrit) ────────
-        $admitted1 = AdmittedStudent::create([
+        AdmittedStudent::create([
             'last_name'        => 'KOUAME',
             'first_name'       => 'Jean-Baptiste',
             'date_of_birth'    => '2000-01-15',
@@ -54,7 +60,7 @@ class PortalTestSeeder extends Seeder
             'status'           => 'INVITE',
         ]);
 
-        // ── Admis test 2 — BAMBA Aminata (compte portail déjà créé) ─────────
+        // ── Admis test 2 — BAMBA Aminata → compte marcdevfullstack@gmail.com ─
         $admitted2 = AdmittedStudent::create([
             'last_name'        => 'BAMBA',
             'first_name'       => 'Aminata',
@@ -68,20 +74,18 @@ class PortalTestSeeder extends Seeder
             'status'           => 'INSCRIT',
         ]);
 
-        // ── Compte portail pour BAMBA Aminata (mot de passe hashé via cast) ─
-        $portalUser = PortalUser::create([
+        $portalUser1 = PortalUser::create([
             'admitted_student_id' => $admitted2->id,
             'last_name'           => 'BAMBA',
             'first_name'          => 'Aminata',
             'date_of_birth'       => '1999-07-22',
-            'email'               => 'etudiant@insfs.ci',
+            'email'               => 'marcdevfullstack@gmail.com',
             'phone'               => '0700000000',
-            'password'            => 'insfs2026', // ✅ cast 'hashed' s'occupe du bcrypt
+            'password'            => 'insfs2026',
         ]);
 
-        // ── Dossier d'inscription (BROUILLON) ────────────────────────────────
         EnrollmentApplication::create([
-            'portal_user_id'      => $portalUser->id,
+            'portal_user_id'      => $portalUser1->id,
             'admitted_student_id' => $admitted2->id,
             'academic_year_id'    => $year->id,
             'status'              => 'BROUILLON',
@@ -90,10 +94,46 @@ class PortalTestSeeder extends Seeder
             'nationality'         => 'Ivoirienne',
         ]);
 
+        // ── Admis test 3 — TRAORE Moussa → compte etudiant@insfs.ci ─────────
+        $admitted3 = AdmittedStudent::create([
+            'last_name'        => 'TRAORE',
+            'first_name'       => 'Moussa',
+            'date_of_birth'    => '2001-03-10',
+            'school_id'        => $school->id,
+            'academic_year_id' => $year->id,
+            'entry_mode'       => 'Concours direct',
+            'year_of_study'    => 1,
+            'imported_by'      => $admin->id,
+            'import_batch'     => 'TEST-2025',
+            'status'           => 'INSCRIT',
+        ]);
+
+        $portalUser2 = PortalUser::create([
+            'admitted_student_id' => $admitted3->id,
+            'last_name'           => 'TRAORE',
+            'first_name'          => 'Moussa',
+            'date_of_birth'       => '2001-03-10',
+            'email'               => 'etudiant@insfs.ci',
+            'phone'               => '0700000001',
+            'password'            => 'insfs2026',
+        ]);
+
+        EnrollmentApplication::create([
+            'portal_user_id'      => $portalUser2->id,
+            'admitted_student_id' => $admitted3->id,
+            'academic_year_id'    => $year->id,
+            'status'              => 'BROUILLON',
+            'last_name'           => 'TRAORE',
+            'first_name'          => 'Moussa',
+            'nationality'         => 'Ivoirienne',
+        ]);
+
         // ── Résumé ───────────────────────────────────────────────────────────
         $this->command->info('');
-        $this->command->info('✓ Admis test créés : KOUAME Jean-Baptiste + BAMBA Aminata');
-        $this->command->info('✓ Compte portail   : etudiant@insfs.ci / insfs2026');
+        $this->command->info('✓ Admis test créés : KOUAME Jean-Baptiste + BAMBA Aminata + TRAORE Moussa');
+        $this->command->info('');
+        $this->command->info('✓ Compte test 1 : marcdevfullstack@gmail.com / insfs2026');
+        $this->command->info('✓ Compte test 2 : etudiant@insfs.ci / insfs2026');
         $this->command->info('');
         $this->command->info('Test éligibilité :');
         $this->command->info('  Nom      : KOUAME');
