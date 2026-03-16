@@ -41,6 +41,8 @@ class Student extends Model
         'other_diplomas',
         'is_blocked',
         'block_reason',
+        'portal_user_id',
+        'application_id',
     ];
 
     protected function casts(): array

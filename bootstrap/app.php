@@ -12,7 +12,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'portal.user' => \App\Http\Middleware\EnsurePortalUser::class,
+            'admin.user'  => \App\Http\Middleware\EnsureAdminUser::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
